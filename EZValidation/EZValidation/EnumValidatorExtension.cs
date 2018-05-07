@@ -1,5 +1,5 @@
 ﻿using System;
-namespace EZValidation
+namespace EZ.Validation
 {
     public class EnumValidatorCheck<TEnum> : ValidatorCheck<TEnum> 
     {
