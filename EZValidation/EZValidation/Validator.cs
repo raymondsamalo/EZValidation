@@ -54,6 +54,11 @@ namespace EZ.Validation
             this.Checks.Add(func);
             return this;
         }
+        public ValidatorCheck<TProp> MustNot(Func<TProp, bool> func)
+        {
+            this.Checks.Add( x => !func(x));
+            return this;
+        }
         public bool Validate(TProp prop)
         {
             bool valid = true;
