@@ -28,14 +28,13 @@ namespace EZ.Validation
         /// <param name="validator">Validator.</param>
         /// <param name="ruleSelector">Rule selector.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
-        public static EnumValidatorCheck<TEnum> AddRuleFor<T,TEnum>(this Validator<T> validator, Func<T, TEnum> ruleSelector)
+        public static EnumValidatorCheck<TEnum> BeginRuleFor<T,TEnum>(this Validator<T> validator,
+                                                                    Func<T, TEnum> ruleSelector,
+                                                        string message = null,
+                                                        string name = null
+                                                       )
         {
-            var rule = new ValidatorRule<T, TEnum>();
-            var check = new EnumValidatorCheck<TEnum>();
-            rule.Selector = ruleSelector;
-            rule.Check = check;
-            validator.Rules.Add(rule);
-            return check;
+            return validator.AddRule<TEnum, EnumValidatorCheck<TEnum>>(ruleSelector, message, name);
         }
     }
 }

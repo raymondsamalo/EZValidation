@@ -14,8 +14,9 @@ namespace EZ.Validation
     ///
     public interface IValidatorNamedRule
     {
-        String Name { get; }
-        String Message { get; }
+        String RuleName { get;  }
+        String Name { get; set; }
+        String Message { get; set; }
     }
     public interface IValidatorRule<T> : IValidatorNamedRule
     {
@@ -31,22 +32,12 @@ namespace EZ.Validation
             var prop = this.Selector(target);
             return Check.Validate(prop);
         }
-        public String Name => Check.Name;
-        public String Message => Check.Message;
-
+        public String Name { get; set; }  
+        public String Message { get;  set; } = "validation rule";
+        public String RuleName => Name ?? $"Rule({typeof(T).Name} => {typeof(TProp).Name})";
     }
     public class ValidatorCheck<TProp>
     {
-        public String Name { get; private set; } = typeof(TProp).FullName;
-        public void AsName(String name)
-        {
-            Name = name;
-        }
-        public String Message { get; private set; } = "Invalidate rule";
-        public void WithMessage(String message)
-        {
-            Message = message;
-        }
 
         private List<Func<TProp, bool>> Checks { get; set; } = new List<Func<TProp, bool>>();
         public ValidatorCheck<TProp> Must(Func<TProp, bool> func)
@@ -54,10 +45,9 @@ namespace EZ.Validation
             this.Checks.Add(func);
             return this;
         }
-        public ValidatorCheck<TProp> MustNot(Func<TProp, bool> func)
+        public void End()
         {
-            this.Checks.Add( x => !func(x));
-            return this;
+            //this does nothing    
         }
         public bool Validate(TProp prop)
         {
@@ -76,25 +66,41 @@ namespace EZ.Validation
 
     public class ValidatorResult
     {
-        public Dictionary<string, List<string>> ErrorMessages { get; protected set; } = new Dictionary<string, List<string>>();
+        protected Dictionary<string, List<string>> Failures { get;  set; } = new Dictionary<string, List<string>>();
         public bool Valid { get; protected set; } = true;
         public void AddFailedRule(IValidatorNamedRule rule)
         {
-            var messages = ErrorMessages.GetValueOrDefault(rule.Name);
+            var messages = Failures.GetValueOrDefault(rule.RuleName);
             if (messages == null)
             {
                 messages = new List<string>();
             }
             messages.Add(rule.Message);
-            ErrorMessages.Add(rule.Name, messages);
+            Failures.Add(rule.RuleName, messages);
             Valid = false;
         }
+        public IEnumerable<String> ErrorMessages =>Failures.Select((KeyValuePair<string, List<string>> arg) =>$"{arg.Key} failed {String.Join(",", arg.Value)}");
     }
 
     public class Validator<T>
     {
-        public List<IValidatorRule<T>> Rules { get; set; } = new List<IValidatorRule<T>>();
-
+        private List<IValidatorRule<T>> Rules { get; set; } = new List<IValidatorRule<T>>();
+        public TCheck AddRule<TProp,TCheck>(Func<T, TProp> ruleSelector,String message=null,
+                                            String name=null )
+            where TCheck:ValidatorCheck<TProp>, new()
+        {
+            var check = new TCheck();
+            var rule = new ValidatorRule<T, TProp>
+            {
+                Selector = ruleSelector,
+                Check = check,
+            };
+            if (name != null) { rule.Name = name; }
+            if (message != null) { rule.Message = message; }
+            Rules.Add(rule);
+            return check;
+        }
+       
         public ValidatorResult Validate(T target, bool continueOnFail = false)
         {
             var result = new ValidatorResult();

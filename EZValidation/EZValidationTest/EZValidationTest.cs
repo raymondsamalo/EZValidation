@@ -12,18 +12,26 @@ namespace EZValidationTest
     public class TestTarget
     {
         public EnumTest Et { get; set; }
+        public String name { get; set; }
     }
     public class ValidatorTest
     {
 
         [Fact]
-        public void EnumTest()
+        public void CheckEnumTest()
         {
             var validator = new Validator<TestTarget>();
-            validator.AddRuleFor(x => x.Et).IsDefined.WithMessage("Not Defined");
-           var result= validator.Validate(new TestTarget { Et = (EnumTest)(-1) });
-            Console.WriteLine($" {result.ErrorMessages.Keys}");
-            Console.WriteLine($" {result.ErrorMessages.Values}");
+            validator.BeginRuleFor(x => x.name)
+                     .NotNullOrEmpty
+                     .End();
+            validator.BeginRuleFor(x => x.Et,"Enum is defined","Et")
+                     .IsDefined
+                     .End();
+            
+           var results= validator.Validate(new TestTarget { Et = (EnumTest)(-1) });
+            foreach(var result in results.ErrorMessages ){
+                Console.WriteLine($" {result}");
+            }
         }
     }
 }

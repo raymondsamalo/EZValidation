@@ -52,14 +52,13 @@ namespace EZ.Validation
         /// <param name="validator">Validator.</param>
         /// <param name="ruleSelector">Rule selector.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
-        public static StringValidatorCheck AddRuleFor<T>(this Validator<T> validator, Func<T, String> ruleSelector)
+        public static StringValidatorCheck BeginRuleFor<T>(this Validator<T> validator, 
+                                                         Func<T, String> ruleSelector,
+                                                         string message=null,
+                                                         string name=null
+                                                        )
         {
-            var rule = new ValidatorRule<T,string>();
-            var check = new StringValidatorCheck();
-            rule.Selector = ruleSelector;
-            rule.Check = check;
-            validator.Rules.Add(rule);
-            return check;
+            return validator.AddRule<String, StringValidatorCheck>(ruleSelector,message,name);
         }
     }
 }
