@@ -7,14 +7,9 @@ namespace EZ.Validation
         /// Gets the not null or empty.
         /// </summary>
         /// <value>The not null or empty.</value>
-        public EnumValidatorCheck<TEnum> IsDefined
-        {
-            get
-            {
-                this.Must(x => Enum.IsDefined(typeof(TEnum),x));
-                return this;
-            }
-        }
+        public EnumValidatorCheck<TEnum> IsDefined 
+        => (EnumValidatorCheck<TEnum>)Must(x => Enum.IsDefined(typeof(TEnum),x));
+            
     }
     /// <summary>
     /// Enum validator extension.
@@ -32,9 +27,8 @@ namespace EZ.Validation
                                                                     Func<T, TEnum> ruleSelector,
                                                         string message = null,
                                                         string name = null
-                                                       )
-        {
-            return validator.AddRule<TEnum, EnumValidatorCheck<TEnum>>(ruleSelector, message, name);
-        }
+                                                                     )
+        =>validator.AddRule<TEnum, EnumValidatorCheck<TEnum>>(ruleSelector, message, name);
+       
     }
 }

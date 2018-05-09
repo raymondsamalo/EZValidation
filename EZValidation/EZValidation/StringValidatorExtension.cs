@@ -23,7 +23,7 @@ namespace EZ.Validation
         /// </summary>
         /// <value>The not null or empty.</value>
         public StringValidatorCheck NotNullOrEmpty
-        => (StringValidatorCheck)Must(x => !string.IsNullOrEmpty(x))
+        => (StringValidatorCheck)Must(x => !string.IsNullOrEmpty(x));
 
 
         /// <summary>
