@@ -14,10 +14,10 @@ namespace EZ.Validation
     ///
     public interface IValidatorNamedRule
     {
-        String RuleName { get;  }
         String Name { get; set; }
         String Message { get; set; }
     }
+
     public interface IValidatorRule<T> : IValidatorNamedRule
     {
         bool Validate(T target);
@@ -32,10 +32,17 @@ namespace EZ.Validation
             var prop = this.Selector(target);
             return Check.Validate(prop);
         }
-        public String Name { get; set; }  
+        private string name;
+        public String Name { 
+            get => name ?? $"Rule({typeof(T).Name} => {typeof(TProp).Name})"; 
+            set{
+                name = value;
+            }
+        }  
         public String Message { get;  set; } = "validation rule";
-        public String RuleName => Name ?? $"Rule({typeof(T).Name} => {typeof(TProp).Name})";
     }
+
+
     public class ValidatorCheck<TProp>
     {
 
@@ -67,19 +74,20 @@ namespace EZ.Validation
     public class ValidatorResult
     {
         protected Dictionary<string, List<string>> Failures { get;  set; } = new Dictionary<string, List<string>>();
-        public bool Valid { get; protected set; } = true;
+        public bool Valid => Failures.Any();
         public void AddFailedRule(IValidatorNamedRule rule)
         {
-            var messages = Failures.GetValueOrDefault(rule.RuleName);
+            var messages = Failures.GetValueOrDefault(rule.Name);
             if (messages == null)
             {
                 messages = new List<string>();
+                Failures.Add(rule.Name, messages);
             }
             messages.Add(rule.Message);
-            Failures.Add(rule.RuleName, messages);
-            Valid = false;
         }
-        public IEnumerable<String> ErrorMessages =>Failures.Select((KeyValuePair<string, List<string>> arg) =>$"{arg.Key} failed {String.Join(",", arg.Value)}");
+        public IEnumerable<String> ErrorMessages =>Failures
+            .Select((KeyValuePair<string, List<string>> arg) 
+                    =>$"{arg.Key} failed {String.Join(",", arg.Value)}");
     }
 
     public class Validator<T>
